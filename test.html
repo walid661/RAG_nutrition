@@ -1,41 +1,60 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Demo RAG locale</title>
-    <style>
-      body { font-family: Arial, sans-serif; margin: 40px; }
-      h2 { color: purple; }
-      #q { width: 400px; padding: 5px; }
-      button { padding: 5px 10px; margin-left: 5px; }
-      #out { 
-        margin-top: 20px; 
-        padding: 10px; 
-        border: 1px solid #ccc; 
-        background: #f9f9f9;
-        white-space: pre-wrap;
-      }
-    </style>
-  </head>
-  <body>
-    <h2>Demo RAG Nutrition Sportive 🏃‍♂️</h2>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Demo RAG Nutrition Sportive</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      color: purple;
+    }
+    #response {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Demo RAG Nutrition Sportive 🏃</h1>
 
-    <input id="q" placeholder="Votre question..." size="50">
-    <button onclick="ask()">Envoyer</button>
+  <input type="text" id="question" placeholder="Pose ta question...">
+  <button onclick="askQuestion()">Envoyer</button>
 
-    <div id="out">👉 La réponse apparaîtra ici...</div>
+  <div id="response">👉 La réponse apparaîtra ici...</div>
 
-    <script>
-      async function ask(){
-        const question = document.getElementById('q').value;
-        const res = await fetch("http://127.0.0.1:8000/ask", {
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
+  <script>
+    async function askQuestion() {
+      const question = document.getElementById("question").value;
+      const responseDiv = document.getElementById("response");
+
+      responseDiv.innerHTML = "⏳ Recherche en cours...";
+
+      try {
+        const res = await fetch("https://rag-nutrition.onrender.com/ask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify({ query: question })
         });
+
+        if (!res.ok) {
+          throw new Error("Erreur serveur : " + res.status);
+        }
+
         const data = await res.json();
-        document.getElementById('out').textContent = "Réponse : " + data.answer;
+        responseDiv.innerHTML = "Réponse : " + data.response;
+      } catch (err) {
+        responseDiv.innerHTML = "❌ Erreur : " + err.message;
       }
-    </script>
-  </body>
+    }
+  </script>
+</body>
+</html>
+
 </html>
