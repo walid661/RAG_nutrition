@@ -1,108 +1,101 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RAG Nutrition Sportive</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+      background: linear-gradient(to right, #a18cd1, #fbc2eb);
       margin: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       height: 100vh;
     }
-
     h1 {
-      margin-top: 60px;
-      font-size: 2.8rem;
-      font-weight: bold;
       color: white;
-      text-align: center;
+      font-size: 2.5em;
+      margin-bottom: 20px;
     }
-
-    .search-box {
-      margin-top: 40px;
+    .chat-box {
       width: 80%;
       max-width: 700px;
-      display: flex;
       background: white;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      overflow: hidden;
-    }
-
-    .search-box input {
-      flex: 1;
-      padding: 18px;
-      border: none;
-      font-size: 1.1rem;
-      outline: none;
-    }
-
-    .search-box button {
-      padding: 0 24px;
-      background: #6a11cb;
-      border: none;
-      color: white;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    .search-box button:hover {
-      background: #2575fc;
-    }
-
-    .response-box {
-      margin-top: 30px;
-      width: 80%;
-      max-width: 700px;
-      background: #fff;
-      border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      font-size: 1rem;
-      color: #333;
-      display: none; /* masqué tant qu'il n'y a pas de réponse */
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    .input-group {
+      display: flex;
+      margin-top: 15px;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px 0 0 8px;
+      font-size: 1em;
+    }
+    button {
+      background-color: #6a11cb;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 1em;
+      border-radius: 0 8px 8px 0;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2575fc;
+    }
+    #response {
+      margin-top: 20px;
+      text-align: left;
+      padding: 15px;
+      background: #f8f8f8;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 1.1em;
     }
   </style>
 </head>
 <body>
   <h1>RAG Nutrition Sportive</h1>
-
-  <div class="search-box">
-    <input type="text" id="question" placeholder="Posez votre question ici..." />
-    <button onclick="askQuestion()">Rechercher</button>
+  <div class="chat-box">
+    <p><strong>Posez votre question :</strong></p>
+    <div class="input-group">
+      <input type="text" id="question" placeholder="Ex: Que manger avant un marathon ?" />
+      <button onclick="askQuestion()">Rechercher</button>
+    </div>
+    <div id="response"></div>
   </div>
-
-  <div id="response" class="response-box"></div>
 
   <script>
     async function askQuestion() {
-      const query = document.getElementById("question").value;
+      const question = document.getElementById("question").value;
       const responseBox = document.getElementById("response");
-      responseBox.style.display = "block";
-      responseBox.innerHTML = "Chargement...";
+      responseBox.innerText = "⏳ Recherche en cours...";
 
       try {
         const res = await fetch("https://rag-nutrition.onrender.com/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query })
+          body: JSON.stringify({ question })
         });
 
         const data = await res.json();
-        responseBox.innerHTML = "<strong>Réponse :</strong> " + data.answer;
+        responseBox.innerText = "💡 Réponse : " + (data.response || "Aucune réponse trouvée.");
       } catch (error) {
-        responseBox.innerHTML = "Erreur lors de la récupération de la réponse.";
+        responseBox.innerText = "❌ Erreur lors de la requête.";
+        console.error(error);
       }
     }
   </script>
 </body>
 </html>
+
