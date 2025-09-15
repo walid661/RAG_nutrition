@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Demo RAG Nutrition Sportive</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      color: purple;
+    }
+    #response {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Demo RAG Nutrition Sportive 🏃</h1>
+
+  <input type="text" id="question" placeholder="Pose ta question...">
+  <button onclick="askQuestion()">Envoyer</button>
+
+  <div id="response">👉 La réponse apparaîtra ici...</div>
+
+  <script>
+    async function askQuestion() {
+      const question = document.getElementById("question").value;
+      const responseDiv = document.getElementById("response");
+
+      responseDiv.innerHTML = "⏳ Recherche en cours...";
+
+      try {
+        const res = await fetch("https://rag-nutrition.onrender.com/ask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ query: question })
+        });
+
+        if (!res.ok) {
+          throw new Error("Erreur serveur : " + res.status);
+        }
+
+        const data = await res.json();
+        responseDiv.innerHTML = "Réponse : " + data.response;
+      } catch (err) {
+        responseDiv.innerHTML = "❌ Erreur : " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
