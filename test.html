@@ -1,136 +1,108 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RAG Nutrition - Chatbot</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAG Nutrition Sportive</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb);
       margin: 0;
       padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
-    #chat-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .message {
-      max-width: 70%;
-      padding: 10px 15px;
-      margin: 10px 0;
-      border-radius: 15px;
-      line-height: 1.4;
-    }
-
-    .user {
-      background-color: #0078FF;
+    h1 {
+      margin-top: 60px;
+      font-size: 2.8rem;
+      font-weight: bold;
       color: white;
-      align-self: flex-end;
+      text-align: center;
     }
 
-    .bot {
-      background-color: #E5E5EA;
-      color: black;
-      align-self: flex-start;
-    }
-
-    #input-container {
+    .search-box {
+      margin-top: 40px;
+      width: 80%;
+      max-width: 700px;
       display: flex;
-      padding: 15px;
-      border-top: 1px solid #ddd;
       background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      overflow: hidden;
     }
 
-    #question {
+    .search-box input {
       flex: 1;
-      padding: 12px 15px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-
-    #send {
-      margin-left: 10px;
-      padding: 12px 20px;
-      background-color: #0078FF;
-      color: white;
+      padding: 18px;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
+      font-size: 1.1rem;
+      outline: none;
     }
 
-    #send:disabled {
-      background-color: #aaa;
-      cursor: not-allowed;
+    .search-box button {
+      padding: 0 24px;
+      background: #6a11cb;
+      border: none;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .search-box button:hover {
+      background: #2575fc;
+    }
+
+    .response-box {
+      margin-top: 30px;
+      width: 80%;
+      max-width: 700px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-size: 1rem;
+      color: #333;
+      display: none; /* masqué tant qu'il n'y a pas de réponse */
     }
   </style>
 </head>
 <body>
-  <div id="chat-container"></div>
+  <h1>RAG Nutrition Sportive</h1>
 
-  <div id="input-container">
-    <input type="text" id="question" placeholder="Pose ta question ici..." />
-    <button id="send">Envoyer</button>
+  <div class="search-box">
+    <input type="text" id="question" placeholder="Posez votre question ici..." />
+    <button onclick="askQuestion()">Rechercher</button>
   </div>
 
+  <div id="response" class="response-box"></div>
+
   <script>
-    const chatContainer = document.getElementById("chat-container");
-    const input = document.getElementById("question");
-    const sendBtn = document.getElementById("send");
-
-    async function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
-
-      // Ajout du message utilisateur
-      addMessage(text, "user");
-      input.value = "";
-      sendBtn.disabled = true;
-
-      // Indicateur de chargement
-      const loadingMsg = addMessage("Réflexion en cours...", "bot");
+    async function askQuestion() {
+      const query = document.getElementById("question").value;
+      const responseBox = document.getElementById("response");
+      responseBox.style.display = "block";
+      responseBox.innerHTML = "Chargement...";
 
       try {
         const res = await fetch("https://rag-nutrition.onrender.com/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: text }),
+          body: JSON.stringify({ query })
         });
-        const data = await res.json();
 
-        loadingMsg.textContent = data.answer || "Aucune réponse trouvée.";
-      } catch (err) {
-        loadingMsg.textContent = "Erreur de connexion au serveur.";
-      } finally {
-        sendBtn.disabled = false;
+        const data = await res.json();
+        responseBox.innerHTML = "<strong>Réponse :</strong> " + data.answer;
+      } catch (error) {
+        responseBox.innerHTML = "Erreur lors de la récupération de la réponse.";
       }
     }
-
-    function addMessage(text, role) {
-      const msg = document.createElement("div");
-      msg.className = `message ${role}`;
-      msg.textContent = text;
-      chatContainer.appendChild(msg);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-      return msg;
-    }
-
-    sendBtn.addEventListener("click", sendMessage);
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") sendMessage();
-    });
   </script>
 </body>
 </html>
-
