@@ -1,43 +1,90 @@
-<script>
-  const API_URL = "https://rag-nutrition.onrender.com/ask"; // ton backend
-
-  const form = document.getElementById("searchForm");
-  const input = document.getElementById("questionInput");
-  const answerBox = document.getElementById("answerBox");
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const query = (input.value || "").trim();
-    if (!query) {
-      answerBox.textContent = "Merci d’entrer une question.";
-      return;
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG Nutrition Sportive</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #a18cd1, #fbc2eb);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
     }
+    h1 {
+      color: white;
+      margin-bottom: 20px;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 80%;
+      max-width: 600px;
+    }
+    input {
+      width: 70%;
+      padding: 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #8000ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #5c00b3;
+    }
+    #out {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>🥗 RAG Nutrition Sportive</h1>
+  <div class="container">
+    <input type="text" id="question" placeholder="Pose ta question ici..." />
+    <button onclick="ask()">Rechercher</button>
+    <div id="out"></div>
+  </div>
 
-    answerBox.textContent = "Recherche en cours…";
+  <script>
+    async function ask() {
+      const question = document.getElementById('question').value;
+      const out = document.getElementById('out');
+      out.textContent = "⏳ Recherche en cours...";
 
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }) // <-- clé attendue par FastAPI
-      });
+      try {
+        const res = await fetch("https://rag-nutrition.onrender.com/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: question })
+        });
 
-      // Gestion des erreurs HTTP (ex: 422)
-      if (!res.ok) {
-        const errText = await res.text();
-        answerBox.textContent = `Erreur ${res.status} : ${errText}`;
-        return;
+        if (!res.ok) throw new Error("Erreur serveur");
+        const data = await res.json();
+        out.textContent = "💡 Réponse : " + (data.response || "Aucune réponse trouvée.");
+      } catch (e) {
+        out.textContent = "❌ Erreur : " + e.message;
       }
-
-      const data = await res.json();
-
-      // L’API renvoie {"response": "..."} ; on garde des fallbacks au cas où
-      const text = data.response || data.answer || data.result || "Aucune réponse trouvée.";
-      answerBox.textContent = text;
-
-    } catch (err) {
-      answerBox.textContent = "Erreur réseau : " + (err?.message || err);
     }
-  });
-</script>
+  </script>
+</body>
+</html>
 
