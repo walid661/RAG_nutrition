@@ -2,59 +2,135 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Demo RAG Nutrition Sportive</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG Nutrition - Chatbot</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    h1 {
-      color: purple;
+
+    #chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 20px;
+      overflow-y: auto;
     }
-    #response {
-      margin-top: 20px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      background: #f9f9f9;
+
+    .message {
+      max-width: 70%;
+      padding: 10px 15px;
+      margin: 10px 0;
+      border-radius: 15px;
+      line-height: 1.4;
+    }
+
+    .user {
+      background-color: #0078FF;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .bot {
+      background-color: #E5E5EA;
+      color: black;
+      align-self: flex-start;
+    }
+
+    #input-container {
+      display: flex;
+      padding: 15px;
+      border-top: 1px solid #ddd;
+      background: white;
+    }
+
+    #question {
+      flex: 1;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    #send {
+      margin-left: 10px;
+      padding: 12px 20px;
+      background-color: #0078FF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #send:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
-  <h1>Demo RAG Nutrition Sportive 🏃</h1>
+  <div id="chat-container"></div>
 
-  <input type="text" id="question" placeholder="Pose ta question...">
-  <button onclick="askQuestion()">Envoyer</button>
-
-  <div id="response">👉 La réponse apparaîtra ici...</div>
+  <div id="input-container">
+    <input type="text" id="question" placeholder="Pose ta question ici..." />
+    <button id="send">Envoyer</button>
+  </div>
 
   <script>
-    async function askQuestion() {
-      const question = document.getElementById("question").value;
-      const responseDiv = document.getElementById("response");
+    const chatContainer = document.getElementById("chat-container");
+    const input = document.getElementById("question");
+    const sendBtn = document.getElementById("send");
 
-      responseDiv.innerHTML = "⏳ Recherche en cours...";
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Ajout du message utilisateur
+      addMessage(text, "user");
+      input.value = "";
+      sendBtn.disabled = true;
+
+      // Indicateur de chargement
+      const loadingMsg = addMessage("Réflexion en cours...", "bot");
 
       try {
         const res = await fetch("https://rag-nutrition.onrender.com/ask", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ query: question })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: text }),
         });
-
-        if (!res.ok) {
-          throw new Error("Erreur serveur : " + res.status);
-        }
-
         const data = await res.json();
-        responseDiv.innerHTML = "Réponse : " + data.response;
+
+        loadingMsg.textContent = data.answer || "Aucune réponse trouvée.";
       } catch (err) {
-        responseDiv.innerHTML = "❌ Erreur : " + err.message;
+        loadingMsg.textContent = "Erreur de connexion au serveur.";
+      } finally {
+        sendBtn.disabled = false;
       }
     }
+
+    function addMessage(text, role) {
+      const msg = document.createElement("div");
+      msg.className = `message ${role}`;
+      msg.textContent = text;
+      chatContainer.appendChild(msg);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      return msg;
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
   </script>
 </body>
 </html>
 
-</html>
