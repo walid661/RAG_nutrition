@@ -46,7 +46,7 @@ if os.path.exists(docs_dir):
 if docs:
     db = Chroma.from_documents(docs, embeddings)
 else:
-    print("⚠️ Aucun document chargé, la base est vide.")
+    print("Aucun document chargé, la base est vide.")
     db = None
 
 # 7. Définir le schéma de requête
